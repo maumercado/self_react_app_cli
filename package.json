@@ -1,18 +1,36 @@
 {
-  "name": "cli",
+  "name": "self-react-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "A Self built create react app like CLI",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/maumercado/self_react_app_cli.git"
+  },
+  "keywords": [
+    "react",
+    "cli",
+    "react-reach",
+    "sass",
+    "hot-reload",
+    "styled-components"
+  ],
   "author": "Mauricio Mercado <me@maumercado.com> (https://maumercado.com)",
   "license": "MIT",
   "devDependencies": {
     "eslint": "^5.16.0",
-    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-react-hooks": "^1.6.0"
+  },
+  "dependencies": {
+    "chalk": "^2.4.2",
+    "commander": "^2.20.0",
+    "fs-extra": "^8.0.1",
+    "validate-npm-package-name": "^3.0.0"
   }
 }
