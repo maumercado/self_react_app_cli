@@ -7,6 +7,8 @@ const Ora = require('ora');
 const path = require('path');
 const validateProjectName = require('validate-npm-package-name');
 
+const originalPackageJSON = require('../package.json');
+
 const execAsync = promisify(exec);
 const packageJson = require('../package.json');
 
@@ -159,6 +161,51 @@ const addPackagesAndConfigToPackageJson = async (root, spinner) => {
   return Promise.resolve();
 };
 
+
+/**
+ * This method will list all dependencies that are needed
+ * for self react app only
+ * @param {Object} deps - Object of dependencies from package.json
+ */
+const getProperDeps = (deps) => {
+  const removablePackages = ['chalk', 'commander', 'fs-extra', 'ora', 'validate-npm-package-name'];
+  return Object.keys(deps).filter(lib => !removablePackages.includes(lib));
+};
+
+/**
+ *
+ * @param {Object} deps - Object dependencies from package.json
+ * @param {Object} devDeps - object devDependencies from package.json
+ * @param {Object} spinner - Instance of Ora Spinner
+ */
+const npmInstallPackages = async (appName, deps, devDeps, spinner) => {
+  await execAsync(`cd ${appName} && npm install -S ${deps.join(' ')}`);
+  spinner.succeed('dependencies installed');
+  await execAsync(`cd ${appName} && npm install -D ${devDeps.join(' ')}`);
+  spinner.succeed('devDependencies installed');
+};
+
+/**
+ *
+ */
+const setupRepo = async (root, spinner) => {
+  const filesToCopy = ['README.md', 'webpack.config.js', '.eslintrc', '.babelrc', '.gitignore'];
+  const promises = filesToCopy.map((file) => {
+    let dst = `${root}/${file}`;
+    if (file === '.gitignore') {
+      dst = `${root}/.${file}`;
+    }
+    return fs.copy(`${__dirname}/../templates/${file}`, dst);
+  });
+  await Promise.all(promises);
+  spinner.succeed('Configuration files copied');
+};
+
+
+const copyReactTemplateApp = async (root, spinner) => {
+
+};
+
 /**
  * This function calls the functions to create the app scaffold
  * @param {String} root - Project root path
@@ -174,6 +221,13 @@ const executeCreation = async (root, appName, originalDirectory) => {
     spinner.start();
     await createValidPackageJson(appName, spinner);
     await addPackagesAndConfigToPackageJson(root, spinner);
+    await npmInstallPackages(
+      getProperDeps(originalPackageJSON.dependencies),
+      getProperDeps(originalPackageJSON.devDependencies),
+      spinner,
+    );
+    await setupRepo(root, spinner);
+    await copyReactTemplateApp(root, spinner);
   } catch (err) {
     spinner.fail(`Welp something broke 😓 ${err}`);
     execSync(`rm -rf ${appName}`);
