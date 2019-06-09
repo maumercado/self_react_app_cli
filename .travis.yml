@@ -7,17 +7,9 @@ node_js:
 notifications:
   email: false
 
-jobs:
-  include:
-    # Define the release stage that runs semantic-release
-    - stage: release
-      node_js: lts/*
-      # Advanced: optionally overwrite your default `script` step to skip the tests
-      # script: skip
-      after_success:
-        - npx semantic-release
-      deploy:
-        provider: script
-        skip_cleanup: true
-        script:
-          - npm run build
+before_script:
+  - npm prune
+script:
+  - npm run build
+after_success:
+  - npm run semantic-release
