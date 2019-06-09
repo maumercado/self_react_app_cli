@@ -156,7 +156,17 @@ const addPackagesAndConfigToPackageJson = async (root, spinner) => {
  * @param {Object} deps - Object of dependencies from package.json
  */
 const getProperDeps = (deps) => {
-  const removablePackages = ['chalk', 'commander', 'fs-extra', 'ora', 'validate-npm-package-name', 'boxen'];
+  const removablePackages = [
+    'chalk',
+    'commander',
+    'fs-extra',,
+    'cz-conventional-changelog',
+    'commitizen',
+    'ora',
+    'validate-npm-package-name',
+    'boxen',
+    'semantic-release'
+  ];
   const names = Object.keys(deps).filter(lib => !removablePackages.includes(lib));
   const packages = names.map(pkg => `${pkg}@${deps[pkg]}`);
   return packages;
