@@ -28,7 +28,7 @@ const logo = 'https://user-images.githubusercontent.com/234708/37256552-32635a02
 const Home = () => (
   <>
     <AppLogo src={logo} alt="logo" />
-    <AppTitle>Welcome to React</AppTitle>
+    <AppTitle>Welcome to your generated React app</AppTitle>
   </>
 );
 export default Home;
