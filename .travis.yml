@@ -14,10 +14,10 @@ jobs:
       node_js: lts/*
       # Advanced: optionally overwrite your default `script` step to skip the tests
       # script: skip
+      after_success:
+        - npx semantic-release
       deploy:
         provider: script
         skip_cleanup: true
-        before_script:
-          - npm run build
         script:
-          - npx semantic-release
+          - npm run build
