@@ -250,7 +250,11 @@ const executeCreation = async (root, appName) => {
     await setupRepo(root, spinner);
     await copyReactTemplateApp(root, appName, spinner);
     log(
-      boxen(`Your react application ${appName} is ready to go!\n`,
+      boxen(`Your react application ${appName} is ready to go!\n
+          To start coding the app run: cd ${appName}\n
+          To start executing the application run: ${npm run start}\n
+          To start executing the application tests run: ${npm run test}
+        `,
         { padding: 1, borderStyle: 'doubleSingle', align: 'center ' }),
     );
   } catch (err) {
