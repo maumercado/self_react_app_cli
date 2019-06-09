@@ -1,7 +1,7 @@
 {
   "name": "self-react-app",
-  "version": "1.0.0",
-  "description": "A Self built create react app like CLI",
+  "version": "0.1.0",
+  "description": "A custom built create react app like CLI",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,6 +18,9 @@
     "hot-reload",
     "styled-components"
   ],
+  "bin": {
+    "generate-react-app": "./bin/sra.js"
+  },
   "author": "Mauricio Mercado <me@maumercado.com> (https://maumercado.com)",
   "license": "MIT",
   "devDependencies": {
