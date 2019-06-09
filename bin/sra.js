@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require("@babel/polyfill");
+
 const { exec, execSync, spawnSync } = require('child_process');
 const { promisify } = require('util');
 const chalk = require('chalk');
