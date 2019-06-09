@@ -21,7 +21,7 @@
     "styled-components"
   ],
   "bin": {
-    "generate-react-app": "./bin/sra.js"
+    "self-react-app": "./bin/sra.js"
   },
   "author": "Mauricio Mercado <me@maumercado.com> (https://maumercado.com)",
   "license": "MIT",
