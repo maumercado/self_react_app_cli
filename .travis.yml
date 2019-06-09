@@ -1,6 +1,9 @@
+sudo: false
 language: node_js
 
 node_js:
+  - 6
+  - 8
   - 10
 
 notifications:
@@ -16,5 +19,7 @@ jobs:
       deploy:
         provider: script
         skip_cleanup: true
+        before_script:
+          - npm run build
         script:
           - npx semantic-release
