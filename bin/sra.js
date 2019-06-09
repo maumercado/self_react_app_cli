@@ -1,9 +1,10 @@
-const { exec, execSync } = require('child_process');
+const { exec, execSync, spawnSync } = require('child_process');
 const { promisify } = require('util');
 const chalk = require('chalk');
 const commander = require('commander');
 const fs = require('fs-extra');
 const Ora = require('ora');
+const boxen = require('boxen');
 const path = require('path');
 const validateProjectName = require('validate-npm-package-name');
 
@@ -18,34 +19,15 @@ const major = semver[0];
 const { log, error } = console;
 
 let projectName;
+
 /**
  * Constants to replace in package.json
  */
 const scripts = {
   start: 'cross-env NODE_ENV=development webpack-dev-server -d',
   build: 'cross-env NODE_ENV=production webpack -p',
+  'lint:css': 'stylelint "./src/**/*.js"',
   test: 'jest',
-};
-
-const jest = {
-  moduleFileExtensions: [
-    'js',
-    'jsx',
-  ],
-  moduleDirectories: [
-    'node_modules',
-  ],
-  setupFiles: [
-    '<rootDir>/src/__tests__/setup.js',
-  ],
-  moduleNameMapper: {
-    '\\\\.(css|styl|less|sass|scss)$': 'identity-obj-proxy',
-  },
-  transform: {
-    '^.+\\\\.js$': 'babel-jest',
-    '^.+\\\\.jsx$': 'babel-jest',
-    '\\\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': '<rootDir>/src/tests/__mock__/fileTransformer.js',
-  },
 };
 
 /**
@@ -148,16 +130,18 @@ const checkAppName = (appName) => {
  * @param {Object} spinner
  */
 const createValidPackageJson = async (appName, spinner) => {
+  spinner.start('Initializing package with npm');
   await execAsync(`cd ${appName} && npm init -y`);
   spinner.succeed('npm init ran successfully');
 };
 
 const addPackagesAndConfigToPackageJson = async (root, spinner) => {
+  spinner.start('Adding configuration to npm package');
   const packageLocation = `${root}/package.json`;
   const packageJSON = await fs.readJSON(packageLocation);
-  const newPackageJSON = { ...packageJSON, scripts, jest };
+  const newPackageJSON = { ...packageJSON, scripts };
   await fs.writeJSON(packageLocation, newPackageJSON, { spaces: 2 });
-  spinner.succeed('npm package initialized');
+  spinner.succeed('npm package configured');
   return Promise.resolve();
 };
 
@@ -168,8 +152,10 @@ const addPackagesAndConfigToPackageJson = async (root, spinner) => {
  * @param {Object} deps - Object of dependencies from package.json
  */
 const getProperDeps = (deps) => {
-  const removablePackages = ['chalk', 'commander', 'fs-extra', 'ora', 'validate-npm-package-name'];
-  return Object.keys(deps).filter(lib => !removablePackages.includes(lib));
+  const removablePackages = ['chalk', 'commander', 'fs-extra', 'ora', 'validate-npm-package-name', 'boxen'];
+  const names = Object.keys(deps).filter(lib => !removablePackages.includes(lib));
+  const packages = names.map(pkg => `${pkg}@${deps[pkg]}`);
+  return packages;
 };
 
 /**
@@ -178,32 +164,51 @@ const getProperDeps = (deps) => {
  * @param {Object} devDeps - object devDependencies from package.json
  * @param {Object} spinner - Instance of Ora Spinner
  */
-const npmInstallPackages = async (appName, deps, devDeps, spinner) => {
-  await execAsync(`cd ${appName} && npm install -S ${deps.join(' ')}`);
-  spinner.succeed('dependencies installed');
-  await execAsync(`cd ${appName} && npm install -D ${devDeps.join(' ')}`);
-  spinner.succeed('devDependencies installed');
+const npmInstallPackages = async (root, deps, isDeps, spinner) => {
+  spinner.info(`Initializing installation of ${isDeps ? 'dependencies' : 'devDependencies'}`);
+  log();
+  const args = ['install', `${isDeps ? '--save' : '--save-dev'}`].concat(deps);
+
+  const msg = isDeps ? 'dependencies installed' : 'devDependencies installed';
+  const proc = spawnSync('npm', args, { stdio: 'inherit', cwd: root });
+
+  if (proc.status !== 0) {
+    throw new Error(`${proc.error}`);
+  }
+  spinner.succeed(msg);
 };
 
 /**
  *
  */
 const setupRepo = async (root, spinner) => {
-  const filesToCopy = ['README.md', 'webpack.config.js', '.eslintrc', '.babelrc', '.gitignore'];
+  spinner.start('Copying configuration files for react');
+  const filesToCopy = [
+    'README.md',
+    'webpack.config.js',
+    '.eslintrc.js',
+    '.babelrc',
+    'gitignore',
+    'jest.config.js',
+    '.stylelintrc'
+  ];
+
   const promises = filesToCopy.map((file) => {
     let dst = `${root}/${file}`;
-    if (file === '.gitignore') {
+    if (file === 'gitignore') {
       dst = `${root}/.${file}`;
     }
-    return fs.copy(`${__dirname}/../templates/${file}`, dst);
+    return fs.copy(path.join(__dirname, `../templates/${file}`), dst);
   });
   await Promise.all(promises);
   spinner.succeed('Configuration files copied');
 };
 
 
-const copyReactTemplateApp = async (root, spinner) => {
-
+const copyReactTemplateApp = async (root, appName, spinner) => {
+  spinner.start('Copying React application files');
+  await fs.copy(path.join(__dirname, '../templates/src'), `${appName}/src`);
+  spinner.succeed('React codebase ready to go!');
 };
 
 /**
@@ -212,24 +217,30 @@ const copyReactTemplateApp = async (root, spinner) => {
  * @param {String} appName - Project name
  * @param {String} originalDirectory - Directory where this script was executed
  */
-const executeCreation = async (root, appName, originalDirectory) => {
+const executeCreation = async (root, appName) => {
   const spinner = new Ora({
     text: 'Initializing project with npm init',
     spinner: 'boxBounce2',
   });
+
   try {
-    spinner.start();
+    const deps = getProperDeps(originalPackageJSON.dependencies);
+    const devDeps = getProperDeps(originalPackageJSON.devDependencies);
+
     await createValidPackageJson(appName, spinner);
     await addPackagesAndConfigToPackageJson(root, spinner);
-    await npmInstallPackages(
-      getProperDeps(originalPackageJSON.dependencies),
-      getProperDeps(originalPackageJSON.devDependencies),
-      spinner,
-    );
+
+    await npmInstallPackages(root, deps, true, spinner);
+    await npmInstallPackages(root, devDeps, false, spinner);
+
     await setupRepo(root, spinner);
-    await copyReactTemplateApp(root, spinner);
+    await copyReactTemplateApp(root, appName, spinner);
+    log(
+      boxen(`Your react application ${appName} is ready to go!\n`,
+        { padding: 1, borderStyle: 'doubleSingle', align: 'center ' }),
+    );
   } catch (err) {
-    spinner.fail(`Welp something broke 😓 ${err}`);
+    spinner.fail(chalk.red(`Welp something broke 😓 ${err}`));
     execSync(`rm -rf ${appName}`);
     process.exit(1);
   }
@@ -243,14 +254,13 @@ const executeCreation = async (root, appName, originalDirectory) => {
 const createApp = (name) => {
   // Project root directory
   const root = path.resolve(name);
-  const originalDirectory = process.cwd();
 
   checkAppName(name);
   fs.ensureDirSync(name);
 
   log(`Creating a new React app in ${chalk.green(root)}.`);
   log();
-  executeCreation(root, name, originalDirectory);
+  executeCreation(root, name);
 };
 
 
