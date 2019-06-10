@@ -1,7 +1,5 @@
 # self_react_app_cli
 
-
-
 [![build status](https://img.shields.io/travis/maumercado/self_react_app_cli.svg?style=popout-square)](https://travis-ci.org/maumercado/self_react_app_cli)
 
 [![version](https://img.shields.io/npm/v/self-react-app.svg?style=popout-square)](http://npm.im/self-react-app)
@@ -14,12 +12,17 @@
 
 # Installation
 
-```npm install -g self-react-app```
+```sh
+npm install -g self-react-app
+```
 
 # Usage
+After your package is installed do:
+```sh
+self-react-app <app name>
+```
 
-```self-react-app test```
-
-Or
-
-```npx self-react-app test```
+Or take advantage of npx and simply do:
+```sh
+npx self-react-app <app name>
+```
