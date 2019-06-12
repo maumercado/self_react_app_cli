@@ -2,9 +2,9 @@
   "name": "self-react-app",
   "version": "0.0.0-development",
   "description": "A custom built create react app like CLI",
-  "main": "dist/index.js",
+  "main": "dist/sra.js",
   "files": [
-      "dist/index.js",
+      "dist/sra.js",
       "templates/**/*",
       "package.json"
   ],
