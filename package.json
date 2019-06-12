@@ -2,7 +2,12 @@
   "name": "self-react-app",
   "version": "0.0.0-development",
   "description": "A custom built create react app like CLI",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "files": [
+      "dist/index.js",
+      "templates/**/*",
+      "package.json"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
     "semantic-release": "semantic-release",
