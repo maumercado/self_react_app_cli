@@ -42,7 +42,7 @@ if (major < 10) {
     `You are running Node ${
       currentNodeVersion
     }.\n`
-      + 'Self React App requires Node 10 or higher. \n'
+      + 'Self React App requires Node 8 or higher. \n'
       + 'Please update your version of Node.',
   );
   process.exit(1);
